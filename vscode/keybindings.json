@@ -1,0 +1,193 @@
+// Windows version — cmd replaced with ctrl, ctrl+cmd replaced with ctrl+alt
+// Alt key = Mac Cmd key (mirrors mac-keymap.ahk for VS Code specifically,
+// since VS Code intercepts Alt before AHK can remap it)
+[
+    // ── Mac Cmd shortcuts via Alt key ──────────────────────────────────────
+    { "key": "alt+c",         "command": "editor.action.clipboardCopyAction" },
+    { "key": "alt+v",         "command": "editor.action.clipboardPasteAction" },
+    { "key": "alt+x",         "command": "editor.action.clipboardCutAction" },
+    { "key": "alt+z",         "command": "undo" },
+    { "key": "alt+shift+z",   "command": "redo" },
+    { "key": "alt+a",         "command": "editor.action.selectAll" },
+    { "key": "alt+s",         "command": "workbench.action.files.save" },
+    { "key": "alt+p",         "command": "workbench.action.quickOpen" },
+    { "key": "alt+shift+p",   "command": "workbench.action.showCommands" },
+    { "key": "alt+f",         "command": "actions.find",                      "when": "editorFocus" },
+    { "key": "alt+shift+f",   "command": "workbench.action.findInFiles" },
+    { "key": "alt+w",         "command": "workbench.action.closeActiveEditor" },
+    { "key": "alt+shift+t",   "command": "workbench.action.reopenClosedEditor" },
+    { "key": "alt+n",         "command": "workbench.action.files.newUntitledFile" },
+    { "key": "alt+shift+n",   "command": "workbench.action.newWindow" },
+    { "key": "alt+b",         "command": "workbench.action.toggleSidebarVisibility" },
+    { "key": "alt+shift+e",   "command": "workbench.view.explorer" },
+    { "key": "alt+shift+x",   "command": "workbench.view.extensions" },
+    { "key": "alt+shift+g",   "command": "workbench.view.scm" },
+    { "key": "alt+shift+k",   "command": "editor.action.deleteLines",         "when": "editorTextFocus && !editorReadonly" },
+    { "key": "alt+shift+l",   "command": "editor.action.selectHighlights",    "when": "editorFocus" },
+    { "key": "alt+r",         "command": "workbench.action.reloadWindow" },
+    { "key": "alt+`",         "command": "workbench.action.terminal.toggleTerminal" },
+    { "key": "alt+1",         "command": "workbench.action.openEditorAtIndex1" },
+    { "key": "alt+2",         "command": "workbench.action.openEditorAtIndex2" },
+    { "key": "alt+3",         "command": "workbench.action.openEditorAtIndex3" },
+    { "key": "alt+4",         "command": "workbench.action.openEditorAtIndex4" },
+    { "key": "alt+5",         "command": "workbench.action.openEditorAtIndex5" },
+    { "key": "alt+6",         "command": "workbench.action.openEditorAtIndex6" },
+    { "key": "alt+7",         "command": "workbench.action.openEditorAtIndex7" },
+    { "key": "alt+8",         "command": "workbench.action.openEditorAtIndex8" },
+    { "key": "alt+9",         "command": "workbench.action.openEditorAtIndex9" },
+    // ── Text navigation (mirrors AHK Cmd+Arrow behavior) ───────────────────
+    { "key": "alt+left",      "command": "cursorHome",                        "when": "editorTextFocus" },
+    { "key": "alt+right",     "command": "cursorEnd",                         "when": "editorTextFocus" },
+    { "key": "alt+up",        "command": "cursorTop",                         "when": "editorTextFocus" },
+    { "key": "alt+down",      "command": "cursorBottom",                      "when": "editorTextFocus" },
+    { "key": "alt+shift+left",  "command": "cursorHomeSelect",                "when": "editorTextFocus" },
+    { "key": "alt+shift+right", "command": "cursorEndSelect",                 "when": "editorTextFocus" },
+    { "key": "alt+shift+up",    "command": "cursorTopSelect",                 "when": "editorTextFocus" },
+    { "key": "alt+shift+down",  "command": "cursorBottomSelect",              "when": "editorTextFocus" },
+    {
+        "key": "ctrl+.",
+        "command": "editor.action.triggerSuggest",
+        "when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly && !suggestWidgetVisible"
+    },
+    {
+        "key": "alt+escape",
+        "command": "-editor.action.triggerSuggest",
+        "when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly && !suggestWidgetVisible"
+    },
+    {
+        "key": "ctrl+n",
+        "command": "explorer.newFile",
+        "when": "explorerViewletFocus"
+    },
+    {
+        "key": "ctrl+shift+n",
+        "command": "explorer.newFolder",
+        "when": "explorerViewletFocus"
+    },
+    {
+        "key": "shift+alt+g",
+        "command": "git.checkout"
+    },
+    {
+        "key": "ctrl+alt+oem_minus",
+        "command": "editor.action.revealDefinition",
+        "when": "editorHasDefinitionProvider && editorTextFocus"
+    },
+    {
+        "key": "f12",
+        "command": "-editor.action.revealDefinition",
+        "when": "editorHasDefinitionProvider && editorTextFocus"
+    },
+    {
+        "key": "alt+j",
+        "command": "editor.action.moveLinesDownAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "alt+k",
+        "command": "editor.action.moveLinesUpAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "shift+alt+j",
+        "command": "editor.action.copyLinesDownAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "shift+alt+k",
+        "command": "editor.action.copyLinesUpAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+w",
+        "command": "workbench.action.terminal.kill",
+        "when": "terminalFocus"
+    },
+    {
+        "key": "ctrl+k",
+        "command": "selectPrevSuggestion",
+        "when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus"
+    },
+    {
+        "key": "ctrl+j",
+        "command": "selectNextSuggestion",
+        "when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus"
+    },
+    {
+        "key": "ctrl+k",
+        "command": "quickInput.previous",
+        "when": "inQuickInput && quickInputType == 'quickPick'"
+    },
+    {
+        "key": "ctrl+j",
+        "command": "quickInput.next",
+        "when": "inQuickInput && quickInputType == 'quickPick'"
+    },
+    {
+        "key": "ctrl+shift+l",
+        "command": "workbench.action.increaseViewWidth",
+        "when": "editorTextFocus && !editorReadonly && vim.active && vim.mode == 'Normal'"
+    },
+    {
+        "key": "ctrl+shift+h",
+        "command": "workbench.action.decreaseViewWidth",
+        "when": "editorTextFocus && !editorReadonly && vim.active && vim.mode == 'Normal'"
+    },
+    {
+        "key": "ctrl+shift+k",
+        "command": "workbench.action.increaseViewHeight",
+        "when": "editorTextFocus && !editorReadonly && vim.active && vim.mode == 'Normal'"
+    },
+    {
+        "key": "ctrl+shift+j",
+        "command": "workbench.action.decreaseViewHeight",
+        "when": "editorTextFocus && !editorReadonly && vim.active && vim.mode == 'Normal'"
+    },
+    // Terminal pane focus: alt+ctrl+h/l (was alt+cmd+h/l)
+    {
+        "key": "ctrl+alt+h",
+        "command": "workbench.action.terminal.focusPreviousPane",
+        "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+    },
+    {
+        "key": "ctrl+alt+l",
+        "command": "workbench.action.terminal.focusNextPane",
+        "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+    },
+    // Move editor between groups: ctrl+alt+k/j/h/l (was ctrl+cmd+k/j/h/l)
+    {
+        "key": "ctrl+alt+k",
+        "command": "workbench.action.moveEditorToAboveGroup"
+    },
+    {
+        "key": "ctrl+alt+j",
+        "command": "workbench.action.moveEditorToBelowGroup"
+    },
+    {
+        "key": "ctrl+alt+h",
+        "command": "workbench.action.moveEditorToLeftGroup"
+    },
+    {
+        "key": "ctrl+alt+l",
+        "command": "workbench.action.moveEditorToRightGroup"
+    },
+    // Multi-cursor: ctrl+alt+up/down (was alt+cmd+k/j)
+    {
+        "key": "ctrl+alt+up",
+        "command": "editor.action.insertCursorAbove",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+alt+down",
+        "command": "editor.action.insertCursorBelow",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "shift+enter",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": {
+            "text": "\\\r\n"
+        },
+        "when": "terminalFocus"
+    }
+]
