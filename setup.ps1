@@ -1,13 +1,34 @@
 # Windows Setup Script
 # Run as Administrator in PowerShell:
 #   powershell -ExecutionPolicy Bypass -File setup.ps1
+#
+# To skip specific steps, edit the $SKIP array below.
+# Available skip keys:
+#   packages          - winget app installs
+#   font              - FiraCode Nerd Font
+#   nvim              - Neovim config copy
+#   vscodevimrc       - .vscodevimrc copy
+#   vscode-settings   - VS Code settings + keybindings
+#   vscode-extensions - VS Code extension installs
+#   wsl               - WSL2 + Ubuntu install
+#   zsh               - zsh/oh-my-zsh setup inside WSL
+#   terminal          - Windows Terminal default profile config
+#   ahk               - AutoHotkey mac-keymap install
+#
+# Example — skip WSL and zsh:
+#   $SKIP = @("wsl", "zsh")
+
+$SKIP = @()
 
 $ErrorActionPreference = "Stop"
 $SETUP_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-function Info($msg) { Write-Host "[INFO] $msg" -ForegroundColor Cyan }
-function Ok($msg)   { Write-Host "[ OK ] $msg" -ForegroundColor Green }
-function Warn($msg) { Write-Host "[WARN] $msg" -ForegroundColor Yellow }
+function Info($msg)  { Write-Host "[INFO] $msg" -ForegroundColor Cyan }
+function Ok($msg)    { Write-Host "[ OK ] $msg" -ForegroundColor Green }
+function Warn($msg)  { Write-Host "[WARN] $msg" -ForegroundColor Yellow }
+function Skip($msg)  { Write-Host "[SKIP] $msg" -ForegroundColor DarkGray }
+
+function Should-Skip($key) { return $SKIP -contains $key }
 
 function Test-WinInstalled($displayName) {
     $regPaths = @(
@@ -24,6 +45,7 @@ function Test-WinInstalled($displayName) {
 }
 
 # ─── 1. Install software via winget ────────────────────────────────────────────
+if (Should-Skip "packages") { Skip "packages -- skipped" } else {
 Info "Installing packages via winget..."
 
 $packages = @(
@@ -52,8 +74,10 @@ foreach ($pkg in $packages) {
         Ok "$($pkg.name) installed"
     }
 }
+} # end packages
 
 # ─── 2. Install FiraCode Nerd Font ─────────────────────────────────────────────
+if (Should-Skip "font") { Skip "font -- skipped" } else {
 Info "Installing FiraCode Nerd Font..."
 $fontUrl = "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/FiraCode.zip"
 $fontZip = "$env:TEMP\FiraCode.zip"
@@ -73,8 +97,10 @@ if (-not (Test-Path "$env:SystemRoot\Fonts\FiraCode*.ttf")) {
 } else {
     Ok "FiraCode Nerd Font already installed"
 }
+} # end font
 
 # ─── 3. Copy Neovim config ─────────────────────────────────────────────────────
+if (Should-Skip "nvim") { Skip "nvim -- skipped" } else {
 Info "Copying Neovim config..."
 $nvimDest = "$env:LOCALAPPDATA\nvim"
 $nvimSrc  = Join-Path $SETUP_DIR "nvim"
@@ -90,8 +116,10 @@ if (Test-Path $nvimSrc) {
 } else {
     Warn "nvim/ folder not found in setup dir -- run collect.sh on your Mac first"
 }
+} # end nvim
 
 # ─── 4. Copy .vscodevimrc ──────────────────────────────────────────────────────
+if (Should-Skip "vscodevimrc") { Skip "vscodevimrc -- skipped" } else {
 Info "Copying .vscodevimrc..."
 $vimrcSrc = Join-Path $SETUP_DIR ".vscodevimrc"
 if (Test-Path $vimrcSrc) {
@@ -100,8 +128,10 @@ if (Test-Path $vimrcSrc) {
 } else {
     Warn ".vscodevimrc not found in setup dir"
 }
+} # end vscodevimrc
 
 # ─── 5. Copy VS Code settings ──────────────────────────────────────────────────
+if (Should-Skip "vscode-settings") { Skip "vscode-settings -- skipped" } else {
 Info "Copying VS Code settings..."
 $vscodeDest = "$env:APPDATA\Code\User"
 
@@ -125,8 +155,10 @@ if (Test-Path $keybindingsSrc) {
 } else {
     Warn "vscode/keybindings.json not found"
 }
+} # end vscode-settings
 
 # ─── 6. Install VS Code extensions ─────────────────────────────────────────────
+if (Should-Skip "vscode-extensions") { Skip "vscode-extensions -- skipped" } else {
 Info "Installing VS Code extensions..."
 
 $codeCli = @(
@@ -257,8 +289,10 @@ $extensions = @(
         Ok "Extension: $ext"
     }
 }
+} # end vscode-extensions
 
 # ─── 7. WSL2 + Ubuntu + zsh ───────────────────────────────────────────────────
+if (Should-Skip "wsl") { Skip "wsl -- skipped" } else {
 Info "Setting up WSL2 and Ubuntu..."
 
 $wslWorking = $false
@@ -285,8 +319,10 @@ if (-not $ubuntuInstalled) {
 } else {
     Ok "Ubuntu already installed"
 }
+} # end wsl
 
 # Copy zsh setup into WSL home and run it
+if (Should-Skip "zsh") { Skip "zsh -- skipped" } else {
 Info "Running zsh/oh-my-zsh setup inside WSL..."
 $zshSrc = Join-Path $SETUP_DIR "zsh"
 if (-not (Test-Path $zshSrc)) {
@@ -302,8 +338,10 @@ if (-not (Test-Path $zshSrc)) {
     wsl -d Ubuntu -e bash -c "mkdir -p /tmp/mac-setup/zsh && cp -r '$wslZshSrc/.' /tmp/mac-setup/zsh/ && sed -i 's/\r//' /tmp/mac-setup/zsh/install.sh && bash /tmp/mac-setup/zsh/install.sh"
     Ok "zsh setup complete inside WSL"
 }
+} # end zsh
 
 # ─── 7b. Set Windows Terminal default profile to Ubuntu ───────────────────────
+if (Should-Skip "terminal") { Skip "terminal -- skipped" } else {
 Info "Configuring Windows Terminal to default to Ubuntu..."
 $wtSettings = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
 if (Test-Path $wtSettings) {
@@ -319,8 +357,10 @@ if (Test-Path $wtSettings) {
 } else {
     Warn "Windows Terminal settings not found -- open Windows Terminal once then re-run"
 }
+} # end terminal
 
 # ─── 8. Mac keymap (AutoHotkey) ───────────────────────────────────────────────
+if (Should-Skip "ahk") { Skip "ahk -- skipped" } else {
 Info "Setting up Mac-like keymap..."
 $ahkSrc = Join-Path $SETUP_DIR "mac-keymap.ahk"
 $ahkDest = "$env:USERPROFILE\mac-keymap.ahk"
@@ -339,6 +379,7 @@ if (Test-Path $ahkSrc) {
 } else {
     Warn "mac-keymap.ahk not found in setup dir"
 }
+} # end ahk
 
 # ─── 8. PowerToys reminder ─────────────────────────────────────────────────────
 Write-Host ""

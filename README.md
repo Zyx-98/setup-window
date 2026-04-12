@@ -15,7 +15,6 @@ Portable setup package to replicate a MacBook development environment on a Windo
 │   └── keybindings.json
 └── zsh/
     ├── .zshrc          # WSL zsh config (oh-my-zsh + robbyrussell + autosuggestions)
-    ├── .zshrc.mac      # Original Mac .zshrc (reference only)
     └── install.sh      # Runs inside WSL to set up zsh, nvm, Node, Python, Go
 ```
 
@@ -42,40 +41,64 @@ zip -r Onboarding.zip Onboarding/
 Open **PowerShell as Administrator** and run:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File C:\path\to\Onboarding\setup.ps1
+powershell -ExecutionPolicy Bypass -File E:\path\to\Onboarding\setup.ps1
 ```
 
 > If WSL2 is not yet enabled, the script will enable it and ask you to **reboot**.
 > After reboot, run the script again — it will continue from where it left off.
 
-### What gets installed automatically
+The script is fully **idempotent** — safe to re-run at any time. Already-installed items are skipped automatically.
 
-| Category | Software |
-|---|---|
-| Editor | VS Code |
-| Terminal | Windows Terminal |
-| Shell | WSL2 + Ubuntu + zsh + oh-my-zsh |
-| Neovim | Neovim + your full config |
-| Git | Git for Windows |
-| Docker | Docker Desktop |
-| Database | DataGrip, MySQL, PostgreSQL |
-| Languages | Go, Node.js LTS, Python 3 |
-| Utilities | PowerToys, AutoHotkey |
-| Font | FiraCode Nerd Font |
+### What gets installed
+
+| Step | Key | What it does |
+|---|---|---|
+| 1 | `packages` | Installs apps via winget (VS Code, Git, Docker, Go, Node, Python, etc.) |
+| 2 | `font` | Downloads and installs FiraCode Nerd Font |
+| 3 | `nvim` | Copies your Neovim config to `%LOCALAPPDATA%\nvim` |
+| 4 | `vscodevimrc` | Copies `.vscodevimrc` to your user profile |
+| 5 | `vscode-settings` | Copies VS Code `settings.json` and `keybindings.json` |
+| 6 | `vscode-extensions` | Installs all VS Code extensions |
+| 7 | `wsl` | Installs WSL2 + Ubuntu |
+| 7b | `zsh` | Sets up zsh + oh-my-zsh + nvm + Node + Python + Go inside WSL |
+| 7c | `terminal` | Sets Windows Terminal default profile to Ubuntu |
+| 8 | `ahk` | Installs mac-keymap.ahk and sets it to auto-start on login |
 
 ---
 
-## Step 3 — Set up zsh inside WSL
+## Skipping steps
 
-After the main script finishes, open **Ubuntu** (from Start Menu or Windows Terminal) and run:
+To skip one or more steps, edit the `$SKIP` array near the top of `setup.ps1`:
 
-```bash
-bash /tmp/mac-setup/zsh/install.sh
+```powershell
+# Skip WSL and zsh setup (e.g. already done, or not needed)
+$SKIP = @("wsl", "zsh")
+
+# Skip database apps and font
+$SKIP = @("font")
+
+# Skip everything except extensions
+$SKIP = @("packages", "font", "nvim", "vscodevimrc", "vscode-settings", "wsl", "zsh", "terminal", "ahk")
 ```
 
+Available skip keys: `packages`, `font`, `nvim`, `vscodevimrc`, `vscode-settings`, `vscode-extensions`, `wsl`, `zsh`, `terminal`, `ahk`
+
+---
+
+## Running install.sh manually inside WSL
+
+If the zsh step failed or you want to re-run it separately, open Ubuntu and run:
+
+```bash
+# From the mounted Windows drive (adjust drive letter as needed)
+sed -i 's/\r//' /mnt/e/github/setup-window/zsh/install.sh
+bash /mnt/e/github/setup-window/zsh/install.sh
+```
+
+> The `sed` command strips Windows line endings — required if Git on Windows re-added them.
+
 This installs inside WSL:
-- zsh + oh-my-zsh
-- `robbyrussell` theme
+- zsh + oh-my-zsh (`robbyrussell` theme)
 - `zsh-autosuggestions` plugin
 - nvm + Node.js LTS
 - Python 3 + pip + venv
@@ -90,31 +113,52 @@ Close and reopen the WSL terminal when done — zsh starts automatically.
 The `mac-keymap.ahk` script is installed and auto-starts on login.
 **Left Alt** acts as the `Cmd` key. **Win key** acts as `Option`.
 
-| Mac shortcut | Windows (with script) |
+| Mac shortcut | Windows (with AHK script) |
 |---|---|
 | `Cmd+C/V/X/Z/A/S` | `Alt+C/V/X/Z/A/S` |
-| `Cmd+W/T/N/F/R` | `Alt+W/T/N/F/R` |
-| `Cmd+Tab` | `Alt+Tab` |
+| `Cmd+W/T/N/F/R/P` | `Alt+W/T/N/F/R/P` |
+| `Cmd+Shift+Z` (redo) | `Alt+Shift+Z` |
+| `Cmd+Tab` (app switch) | `Alt+Tab` |
 | `Cmd+Q` (quit) | `Alt+Q` |
 | `Cmd+Space` (Spotlight) | `Alt+Space` |
 | `Cmd+Left/Right` (line start/end) | `Alt+Left/Right` |
 | `Cmd+Up/Down` (top/bottom of file) | `Alt+Up/Down` |
-| `Cmd+Shift+Z` (redo) | `Alt+Shift+Z` |
 | `Option+Left/Right` (word jump) | `Win+Left/Right` |
 | `Option+Backspace` (delete word) | `Win+Backspace` |
 
-To **pause/resume**: right-click the green `H` icon in the system tray → Suspend.
+To **pause/resume**: right-click the AHK icon in the system tray → Suspend.
+
+> VS Code has its own keyboard handling — Alt key shortcuts for VS Code are defined directly in `vscode/keybindings.json` and work independently of AHK.
 
 ---
 
-## VS Code Keybinding Changes (Mac → Windows)
+## VS Code Keybindings (Mac -> Windows)
 
 | Mac | Windows |
 |---|---|
-| `Cmd+*` | `Ctrl+*` (VS Code handles this natively) |
-| `Alt+Cmd+H/L` | `Ctrl+Alt+H/L` (terminal pane focus) |
-| `Ctrl+Cmd+K/J/H/L` | `Ctrl+Alt+K/J/H/L` (move editor between groups) |
-| `Alt+Cmd+K/J` | `Ctrl+Alt+Up/Down` (multi-cursor) |
+| `Cmd+P` (quick open) | `Alt+P` |
+| `Cmd+Shift+P` (command palette) | `Alt+Shift+P` |
+| `Cmd+Shift+F` (global search) | `Alt+Shift+F` |
+| `Cmd+B` (toggle sidebar) | `Alt+B` |
+| `Alt+Cmd+H/L` (terminal pane focus) | `Ctrl+Alt+H/L` |
+| `Ctrl+Cmd+K/J/H/L` (move editor) | `Ctrl+Alt+K/J/H/L` |
+| `Alt+Cmd+Up/Down` (multi-cursor) | `Ctrl+Alt+Up/Down` |
+
+---
+
+## Line Endings Note
+
+Shell scripts (`.sh`) must use LF line endings to run in WSL. If Git on Windows converts them to CRLF, run inside WSL before executing:
+
+```bash
+sed -i 's/\r//' path/to/script.sh
+```
+
+The `.gitattributes` in this repo enforces LF for `.sh` files automatically. To disable Git's auto-conversion globally on Windows:
+
+```powershell
+git config --global core.autocrlf false
+```
 
 ---
 
