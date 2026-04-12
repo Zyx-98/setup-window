@@ -77,7 +77,11 @@ ok ".zshrc copied"
 
 # ── 8. Set zsh as default shell ───────────────────────────────────────────────
 info "Setting zsh as default shell..."
-chsh -s $(which zsh)
+sudo chsh -s "$(which zsh)" "$USER"
+# Fallback: exec zsh from .bashrc in case chsh doesn't take effect in WSL
+if ! grep -q "exec zsh" "$HOME/.bashrc"; then
+    echo '[ -t 1 ] && exec zsh' >> "$HOME/.bashrc"
+fi
 ok "zsh is now the default shell"
 
 echo ""

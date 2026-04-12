@@ -333,6 +333,23 @@ if (-not (Test-Path $zshSrc)) {
     Ok "zsh setup complete inside WSL"
 }
 
+# ─── 7b. Set Windows Terminal default profile to Ubuntu ───────────────────────
+Info "Configuring Windows Terminal to default to Ubuntu..."
+$wtSettings = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
+if (Test-Path $wtSettings) {
+    $wt = Get-Content $wtSettings -Raw | ConvertFrom-Json
+    $ubuntuProfile = $wt.profiles.list | Where-Object { $_.name -like "*Ubuntu*" } | Select-Object -First 1
+    if ($ubuntuProfile) {
+        $wt.defaultProfile = $ubuntuProfile.guid
+        $wt | ConvertTo-Json -Depth 10 | Set-Content $wtSettings -Encoding UTF8
+        Ok "Windows Terminal now defaults to Ubuntu (zsh)"
+    } else {
+        Warn "Ubuntu profile not found in Windows Terminal yet -- reboot and re-run to apply"
+    }
+} else {
+    Warn "Windows Terminal settings not found -- open Windows Terminal once then re-run"
+}
+
 # ─── 8. Mac keymap (AutoHotkey) ───────────────────────────────────────────────
 Info "Setting up Mac-like keymap..."
 $ahkSrc = Join-Path $SETUP_DIR "mac-keymap.ahk"
