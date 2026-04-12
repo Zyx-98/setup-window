@@ -292,8 +292,14 @@ $zshSrc = Join-Path $SETUP_DIR "zsh"
 if (-not (Test-Path $zshSrc)) {
     Warn "zsh/ folder not found in setup dir -- skipping zsh setup"
 } else {
+    # Convert CRLF to LF on all shell scripts (Git on Windows may re-add CRLF)
+    Get-ChildItem "$zshSrc\*.sh" | ForEach-Object {
+        $text = [System.IO.File]::ReadAllText($_.FullName)
+        $text = $text -replace "`r`n", "`n"
+        [System.IO.File]::WriteAllText($_.FullName, $text, [System.Text.UTF8Encoding]::new($false))
+    }
     $wslZshSrc = $zshSrc -replace '\\', '/' -replace '^([A-Za-z]):', '/mnt/$1'.ToLower()
-    wsl -d Ubuntu -e bash -c "mkdir -p /tmp/mac-setup/zsh && cp -r '$wslZshSrc/.' /tmp/mac-setup/zsh/ && bash /tmp/mac-setup/zsh/install.sh"
+    wsl -d Ubuntu -e bash -c "mkdir -p /tmp/mac-setup/zsh && cp -r '$wslZshSrc/.' /tmp/mac-setup/zsh/ && sed -i 's/\r//' /tmp/mac-setup/zsh/install.sh && bash /tmp/mac-setup/zsh/install.sh"
     Ok "zsh setup complete inside WSL"
 }
 
