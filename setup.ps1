@@ -4,7 +4,7 @@
 #
 # To skip specific steps, edit the $SKIP array below.
 # Available skip keys:
-#   packages          - winget app installs
+#   packages          - all winget app installs
 #   font              - FiraCode Nerd Font
 #   nvim              - Neovim config copy
 #   vscodevimrc       - .vscodevimrc copy
@@ -15,8 +15,16 @@
 #   terminal          - Windows Terminal default profile config
 #   ahk               - AutoHotkey mac-keymap install
 #
-# Example — skip WSL and zsh:
-#   $SKIP = @("wsl", "zsh")
+#   Individual app names (skips just that app from winget):
+#   "MySQL", "PostgreSQL", "DataGrip", "Docker Desktop",
+#   "VS Code", "Neovim", "Git", "Go", "Node.js LTS", "Python 3",
+#   "PowerToys", "Windows Terminal", "AutoHotkey"
+#
+# Example — skip MySQL and PostgreSQL only:
+#   $SKIP = @("MySQL", "PostgreSQL")
+#
+# Example — skip WSL, zsh, and databases:
+#   $SKIP = @("wsl", "zsh", "MySQL", "PostgreSQL", "DataGrip")
 
 $SKIP = @()
 
@@ -65,6 +73,10 @@ $packages = @(
 )
 
 foreach ($pkg in $packages) {
+    if ($SKIP -contains $pkg.name) {
+        Skip "$($pkg.name) -- skipped"
+        continue
+    }
     Info "Checking $($pkg.name)..."
     if (Test-WinInstalled $pkg.check) {
         Ok "$($pkg.name) already installed"
