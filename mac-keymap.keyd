@@ -1,0 +1,84 @@
+# Mac-like keyboard on Ubuntu via keyd
+# https://github.com/rvaiya/keyd
+#
+# Left Alt  = Cmd  (triggers Ctrl shortcuts — copy, paste, save, undo...)
+# Super key = Option (word-jump, delete-word)
+# Left Ctrl = Ctrl (unchanged)
+#
+# Install: sudo apt install keyd  (or build from source — see setup-ubuntu.sh)
+# Apply:   sudo cp mac-keymap.keyd /etc/keyd/default.conf && sudo systemctl restart keyd
+
+[ids]
+*
+
+[main]
+# Left Alt held = "mac" layer (Cmd-like shortcuts)
+leftalt = overload(mac, leftalt)
+
+# Super held = "option" layer (Option/Alt-like shortcuts)
+leftmeta = overload(option, leftmeta)
+
+[mac]
+# ── Core shortcuts (Left Alt + key → Ctrl+key) ───────────────────────────────
+c = C-c
+v = C-v
+a = C-a
+x = C-x
+s = C-s
+z = C-z
+y = C-y
+r = C-r
+b = C-b
+i = C-i
+u = C-u
+d = C-d
+o = C-o
+j = C-j
+e = C-e
+g = C-g
+f = C-f
+p = C-p
+l = C-l
+k = C-k
+n = C-n
+t = C-t
+w = C-w
+
+# ── With Shift ────────────────────────────────────────────────────────────────
+# keyd handles shift transparently — Alt+Shift+Z = Ctrl+Shift+Z, etc.
+
+# ── Quit / Minimize ───────────────────────────────────────────────────────────
+q = A-f4
+m = A-f9
+
+# ── App switching ─────────────────────────────────────────────────────────────
+tab = A-tab
+
+# ── Text navigation (Cmd+Arrow) ───────────────────────────────────────────────
+left  = home
+right = end
+up    = C-home
+down  = C-end
+
+backspace = S-home deletebackward
+
+# ── Tab switching (Cmd+1-9) ───────────────────────────────────────────────────
+1 = C-1
+2 = C-2
+3 = C-3
+4 = C-4
+5 = C-5
+6 = C-6
+7 = C-7
+8 = C-8
+9 = C-9
+
+# ── Space = App launcher (Spotlight equivalent — opens GNOME Activities) ──────
+space = super
+
+[option]
+# ── Word jump / delete (Super = Option) ───────────────────────────────────────
+left      = C-left
+right     = C-right
+backspace = C-backspace
+delete    = C-delete

@@ -1,4 +1,4 @@
-# Mac to Windows Setup
+# Mac to Windows / Ubuntu Setup
 
 Portable setup package to replicate a MacBook development environment on a Windows PC.
 
@@ -8,15 +8,63 @@ Portable setup package to replicate a MacBook development environment on a Windo
 .
 ├── collect.sh          # Run on Mac to bundle latest configs
 ├── setup.ps1           # Run on Windows to install everything
+├── setup-ubuntu.sh     # Run on native Ubuntu to install everything
 ├── mac-keymap.ahk      # AutoHotkey script — Mac-like keyboard on Windows
+├── mac-keymap.keyd     # keyd config — Mac-like keyboard on Ubuntu
 ├── nvim/               # Neovim config (collected from ~/.config/nvim)
 ├── vscode/
-│   ├── settings.json   # VS Code settings (Windows-adapted)
+│   ├── settings.json   # VS Code settings
 │   └── keybindings.json
 └── zsh/
-    ├── .zshrc          # WSL zsh config (oh-my-zsh + robbyrussell + autosuggestions)
-    └── install.sh      # Runs inside WSL to set up zsh, nvm, Node, Python, Go
+    ├── .zshrc          # zsh config (oh-my-zsh + robbyrussell + autosuggestions)
+    └── install.sh      # Sets up zsh, nvm, Node, Python, Go (WSL and Ubuntu)
 ```
+
+---
+
+---
+
+## Ubuntu Setup
+
+Copy the folder to your Ubuntu machine (USB, cloud, scp) and run:
+
+```bash
+bash setup-ubuntu.sh
+```
+
+The script is fully **idempotent** — safe to re-run. To skip steps:
+
+```bash
+SKIP="keymap screenshot" bash setup-ubuntu.sh
+```
+
+Available skip keys: `packages`, `font`, `nvim`, `vscodevimrc`, `vscode-settings`, `vscode-extensions`, `zsh`, `keymap`, `screenshot`
+
+| Step | Key | What it does |
+|---|---|---|
+| 1 | `packages` | apt installs — VS Code, Neovim, Git, Docker, Go, Python |
+| 2 | `font` | Downloads FiraCode Nerd Font to `~/.local/share/fonts` |
+| 3 | `nvim` | Copies Neovim config to `~/.config/nvim` |
+| 4 | `vscodevimrc` | Copies `.vscodevimrc` to `~` |
+| 5 | `vscode-settings` | Copies VS Code settings to `~/.config/Code/User` |
+| 6 | `vscode-extensions` | Installs all VS Code extensions |
+| 7 | `zsh` | zsh + oh-my-zsh + nvm + Node + Python + Go |
+| 8 | `keymap` | Mac-like keyboard via `keyd` (Left Alt = Cmd) |
+| 9 | `screenshot` | Flameshot + binds `Super+Shift+S` to area capture |
+
+### Screenshot shortcuts on Ubuntu
+
+Ubuntu (GNOME) has built-in screenshot tools — no extra install needed for basic use:
+
+| Action | Shortcut |
+|---|---|
+| Full screenshot | `Print Screen` (GNOME 42+: opens picker like macOS Cmd+Shift+5) |
+| Area selection | `Shift+Print Screen` (like macOS Cmd+Shift+4) |
+| Active window | `Alt+Print Screen` |
+| Flameshot area (annotate) | `Super+Shift+S` (set by setup script) |
+
+> **Note:** On GNOME 42+ (Ubuntu 22.04+), pressing `Print Screen` opens an interactive
+> screenshot dialog — similar to macOS `Cmd+Shift+5`. Flameshot adds annotation tools.
 
 ---
 
