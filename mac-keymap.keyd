@@ -20,6 +20,11 @@ leftmeta = overload(option, leftmeta)
 
 [mac]
 # ── Core shortcuts (Left Alt + key → Ctrl+key) ───────────────────────────────
+# NOTE: j, k, r are intentionally NOT remapped here.
+# keyd intercepts keys before VS Code sees them (kernel-level, unlike AHK).
+# If j/k/r were remapped to Ctrl, VS Code would never see Alt+J/K/R — and
+# those are bound to move-line/copy-line/reload in VS Code's keybindings.json.
+# Leaving them out means VS Code receives Alt+J, Alt+K, Alt+R as-is.
 c = C-c
 v = C-v
 a = C-a
@@ -27,19 +32,16 @@ x = C-x
 s = C-s
 z = C-z
 y = C-y
-r = C-r
 b = C-b
 i = C-i
 u = C-u
 d = C-d
 o = C-o
-j = C-j
 e = C-e
 g = C-g
 f = C-f
 p = C-p
 l = C-l
-k = C-k
 n = C-n
 t = C-t
 w = C-w
@@ -73,8 +75,11 @@ backspace = S-home deletebackward
 8 = C-8
 9 = C-9
 
-# ── Space = App launcher (Spotlight equivalent — opens GNOME Activities) ──────
-space = super
+# ── Space shortcuts ───────────────────────────────────────────────────────────
+# Alt+Space        → Super key → GNOME Activities (Spotlight-like search)
+# Ctrl+Alt+Space   → Super+.  → emoji picker  (mirrors macOS Ctrl+Cmd+Space)
+space   = super
+C-space = M-.      # M = Meta/Super key in keyd notation
 
 [option]
 # ── Word jump / delete (Super = Option) ───────────────────────────────────────

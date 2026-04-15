@@ -13,8 +13,9 @@ Portable setup package to replicate a MacBook development environment on a Windo
 ├── mac-keymap.keyd     # keyd config — Mac-like keyboard on Ubuntu
 ├── nvim/               # Neovim config (collected from ~/.config/nvim)
 ├── vscode/
-│   ├── settings.json   # VS Code settings
-│   └── keybindings.json
+│   ├── settings.json          # VS Code settings
+│   ├── keybindings.json       # VS Code keybindings — Windows (AHK) version
+│   └── keybindings-ubuntu.json # VS Code keybindings — Ubuntu (keyd) version
 └── zsh/
     ├── .zshrc          # zsh config (oh-my-zsh + robbyrussell + autosuggestions)
     └── install.sh      # Sets up zsh, nvm, Node, Python, Go (WSL and Ubuntu)

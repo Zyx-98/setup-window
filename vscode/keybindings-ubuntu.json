@@ -1,0 +1,191 @@
+// Ubuntu + keyd keybindings
+//
+// Strategy: include ALL alt+key bindings explicitly.
+//
+//   With keyd running:
+//     Keys in keyd [mac] layer (c,v,a,x,s,z,b,f,p,n,w...)
+//       → keyd converts Alt+key → Ctrl+key → VS Code handles natively
+//       → the alt+key binding below never fires but is harmless
+//     Keys NOT in keyd [mac] layer (j, k, r, `)
+//       → keyd passes them through → VS Code receives Alt+key
+//       → the alt+key binding below fires correctly
+//
+//   Without keyd running (or keyd service stopped):
+//     → VS Code receives Alt+key directly for everything
+//     → the alt+key bindings below handle everything as fallback
+//
+// This file is intentionally redundant in some places so it works
+// reliably in both scenarios without needing to diagnose keyd status.
+[
+    // ── Cmd shortcuts (Alt = Cmd) ─────────────────────────────────────────────
+    { "key": "alt+c",           "command": "editor.action.clipboardCopyAction" },
+    { "key": "alt+v",           "command": "editor.action.clipboardPasteAction" },
+    { "key": "alt+x",           "command": "editor.action.clipboardCutAction" },
+    { "key": "alt+z",           "command": "undo" },
+    { "key": "alt+shift+z",     "command": "redo" },
+    { "key": "alt+a",           "command": "editor.action.selectAll" },
+    { "key": "alt+s",           "command": "workbench.action.files.save" },
+    { "key": "alt+p",           "command": "workbench.action.quickOpen" },
+    { "key": "alt+shift+p",     "command": "workbench.action.showCommands" },
+    { "key": "alt+f",           "command": "actions.find",                     "when": "editorFocus" },
+    { "key": "alt+shift+f",     "command": "workbench.action.findInFiles" },
+    { "key": "alt+w",           "command": "workbench.action.closeActiveEditor" },
+    { "key": "alt+shift+t",     "command": "workbench.action.reopenClosedEditor" },
+    { "key": "alt+n",           "command": "workbench.action.files.newUntitledFile" },
+    { "key": "alt+shift+n",     "command": "workbench.action.newWindow" },
+    { "key": "alt+b",           "command": "workbench.action.toggleSidebarVisibility" },
+    { "key": "alt+shift+e",     "command": "workbench.view.explorer" },
+    { "key": "alt+shift+x",     "command": "workbench.view.extensions" },
+    { "key": "alt+shift+g",     "command": "workbench.view.scm" },
+    { "key": "alt+shift+k",     "command": "editor.action.deleteLines",        "when": "editorTextFocus && !editorReadonly" },
+    { "key": "alt+shift+l",     "command": "editor.action.selectHighlights",   "when": "editorFocus" },
+    { "key": "alt+r",           "command": "workbench.action.reloadWindow" },
+    { "key": "alt+`",           "command": "workbench.action.terminal.toggleTerminal" },
+    { "key": "alt+1",           "command": "workbench.action.openEditorAtIndex1" },
+    { "key": "alt+2",           "command": "workbench.action.openEditorAtIndex2" },
+    { "key": "alt+3",           "command": "workbench.action.openEditorAtIndex3" },
+    { "key": "alt+4",           "command": "workbench.action.openEditorAtIndex4" },
+    { "key": "alt+5",           "command": "workbench.action.openEditorAtIndex5" },
+    { "key": "alt+6",           "command": "workbench.action.openEditorAtIndex6" },
+    { "key": "alt+7",           "command": "workbench.action.openEditorAtIndex7" },
+    { "key": "alt+8",           "command": "workbench.action.openEditorAtIndex8" },
+    { "key": "alt+9",           "command": "workbench.action.openEditorAtIndex9" },
+
+    // ── Text navigation ───────────────────────────────────────────────────────
+    // With keyd: Alt+Arrow → Home/End/Ctrl+Home/Ctrl+End (keyd handles directly)
+    // Without keyd: these alt+arrow bindings fire instead
+    { "key": "alt+left",        "command": "cursorHome",                       "when": "editorTextFocus" },
+    { "key": "alt+right",       "command": "cursorEnd",                        "when": "editorTextFocus" },
+    { "key": "alt+up",          "command": "cursorTop",                        "when": "editorTextFocus" },
+    { "key": "alt+down",        "command": "cursorBottom",                     "when": "editorTextFocus" },
+    { "key": "alt+shift+left",  "command": "cursorHomeSelect",                 "when": "editorTextFocus" },
+    { "key": "alt+shift+right", "command": "cursorEndSelect",                  "when": "editorTextFocus" },
+    { "key": "alt+shift+up",    "command": "cursorTopSelect",                  "when": "editorTextFocus" },
+    { "key": "alt+shift+down",  "command": "cursorBottomSelect",               "when": "editorTextFocus" },
+
+    // ── Move / copy lines (j and k are NOT in keyd mac layer — always alt) ───
+    {
+        "key": "alt+j",
+        "command": "editor.action.moveLinesDownAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "alt+k",
+        "command": "editor.action.moveLinesUpAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "shift+alt+j",
+        "command": "editor.action.copyLinesDownAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "shift+alt+k",
+        "command": "editor.action.copyLinesUpAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+
+    // ── Go to definition (Linux key name: "-" not "oem_minus") ───────────────
+    {
+        "key": "ctrl+alt+-",
+        "command": "editor.action.revealDefinition",
+        "when": "editorHasDefinitionProvider && editorTextFocus"
+    },
+    { "key": "f12", "command": "-editor.action.revealDefinition",
+      "when": "editorHasDefinitionProvider && editorTextFocus" },
+
+    // ── Trigger suggest ───────────────────────────────────────────────────────
+    {
+        "key": "ctrl+.",
+        "command": "editor.action.triggerSuggest",
+        "when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly && !suggestWidgetVisible"
+    },
+    {
+        "key": "alt+escape",
+        "command": "-editor.action.triggerSuggest",
+        "when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly && !suggestWidgetVisible"
+    },
+
+    // ── Explorer: new file / folder ───────────────────────────────────────────
+    { "key": "ctrl+n",       "command": "explorer.newFile",   "when": "explorerViewletFocus" },
+    { "key": "ctrl+shift+n", "command": "explorer.newFolder", "when": "explorerViewletFocus" },
+
+    // ── Git checkout (Alt+Shift+G → source control on Ubuntu via keyd,
+    //    so git checkout gets its own combo) ───────────────────────────────────
+    { "key": "ctrl+alt+g", "command": "git.checkout" },
+
+    // ── Suggest widget navigation (Ctrl+J/K — when conditions prevent conflict)
+    {
+        "key": "ctrl+k",
+        "command": "selectPrevSuggestion",
+        "when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus"
+    },
+    {
+        "key": "ctrl+j",
+        "command": "selectNextSuggestion",
+        "when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus"
+    },
+    {
+        "key": "ctrl+k",
+        "command": "quickInput.previous",
+        "when": "inQuickInput && quickInputType == 'quickPick'"
+    },
+    {
+        "key": "ctrl+j",
+        "command": "quickInput.next",
+        "when": "inQuickInput && quickInputType == 'quickPick'"
+    },
+
+    // ── View resize (Vim normal mode) ─────────────────────────────────────────
+    {
+        "key": "ctrl+shift+l",
+        "command": "workbench.action.increaseViewWidth",
+        "when": "editorTextFocus && !editorReadonly && vim.active && vim.mode == 'Normal'"
+    },
+    {
+        "key": "ctrl+shift+h",
+        "command": "workbench.action.decreaseViewWidth",
+        "when": "editorTextFocus && !editorReadonly && vim.active && vim.mode == 'Normal'"
+    },
+    {
+        "key": "ctrl+shift+k",
+        "command": "workbench.action.increaseViewHeight",
+        "when": "editorTextFocus && !editorReadonly && vim.active && vim.mode == 'Normal'"
+    },
+    {
+        "key": "ctrl+shift+j",
+        "command": "workbench.action.decreaseViewHeight",
+        "when": "editorTextFocus && !editorReadonly && vim.active && vim.mode == 'Normal'"
+    },
+
+    // ── Terminal pane focus: Ctrl+Alt+H/L ────────────────────────────────────
+    {
+        "key": "ctrl+alt+h",
+        "command": "workbench.action.terminal.focusPreviousPane",
+        "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+    },
+    {
+        "key": "ctrl+alt+l",
+        "command": "workbench.action.terminal.focusNextPane",
+        "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+    },
+
+    // ── Move editor between groups ────────────────────────────────────────────
+    { "key": "ctrl+alt+k", "command": "workbench.action.moveEditorToAboveGroup" },
+    { "key": "ctrl+alt+j", "command": "workbench.action.moveEditorToBelowGroup" },
+    { "key": "ctrl+alt+h", "command": "workbench.action.moveEditorToLeftGroup" },
+    { "key": "ctrl+alt+l", "command": "workbench.action.moveEditorToRightGroup" },
+
+    // ── Multi-cursor ──────────────────────────────────────────────────────────
+    { "key": "ctrl+alt+up",   "command": "editor.action.insertCursorAbove", "when": "editorTextFocus" },
+    { "key": "ctrl+alt+down", "command": "editor.action.insertCursorBelow", "when": "editorTextFocus" },
+
+    // ── Terminal ──────────────────────────────────────────────────────────────
+    { "key": "ctrl+shift+w", "command": "workbench.action.terminal.kill", "when": "terminalFocus" },
+    {
+        "key": "shift+enter",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": { "text": "\\\r\n" },
+        "when": "terminalFocus"
+    }
+]

@@ -14,9 +14,11 @@
 #   zsh               - zsh/oh-my-zsh + nvm + Node + Python + Go setup
 #   keymap            - Mac-like keyboard via keyd
 #   screenshot        - Flameshot + shortcut binding
+#   terminal          - Ghostty terminal emulator
+#   emoji             - Smile emoji picker + Super+. shortcut
 #
-# Example — skip databases and keymap:
-#   SKIP="databases keymap" bash setup-ubuntu.sh
+# Example — skip keymap and terminal:
+#   SKIP="keymap terminal" bash setup-ubuntu.sh
 
 SKIP="${SKIP:-}"
 
@@ -162,8 +164,8 @@ if should_skip "vscode-settings"; then skip "vscode-settings -- skipped"; else
 VSCODE_USER="$HOME/.config/Code/User"
 mkdir -p "$VSCODE_USER"
 
-SETTINGS_SRC="$SCRIPT_DIR/vscode/settings.json"
-KEYBINDINGS_SRC="$SCRIPT_DIR/vscode/keybindings.json"
+SETTINGS_SRC="$SCRIPT_DIR/vscode/settings-ubuntu.json"
+KEYBINDINGS_SRC="$SCRIPT_DIR/vscode/keybindings-ubuntu.json"
 
 if [ -f "$SETTINGS_SRC" ]; then
     cp "$SETTINGS_SRC" "$VSCODE_USER/settings.json"
@@ -300,11 +302,32 @@ EXTENSIONS=(
     "zhuangtongfa.material-theme"
 )
 
-info "Installing VS Code extensions..."
+info "Fetching installed extensions list..."
+INSTALLED_EXTS=$(code --list-extensions 2>/dev/null | tr '[:upper:]' '[:lower:]')
+
+EXT_INSTALLED=0
+EXT_SKIPPED=0
+EXT_FAILED=0
+
 for ext in "${EXTENSIONS[@]}"; do
-    code --install-extension "$ext" --force 2>/dev/null
-    ok "Extension: $ext"
+    ext_lower=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+    if echo "$INSTALLED_EXTS" | grep -qx "$ext_lower"; then
+        skip "Already installed: $ext"
+        EXT_SKIPPED=$((EXT_SKIPPED + 1))
+        continue
+    fi
+
+    if code --install-extension "$ext" --force > /dev/null 2>&1; then
+        ok "Installed: $ext"
+        EXT_INSTALLED=$((EXT_INSTALLED + 1))
+    else
+        warn "Failed (skipping): $ext"
+        EXT_FAILED=$((EXT_FAILED + 1))
+    fi
 done
+
+echo ""
+ok "Extensions done — installed: $EXT_INSTALLED, already existed: $EXT_SKIPPED, failed: $EXT_FAILED"
 
 fi
 
@@ -352,9 +375,13 @@ fi
 
 fi # end keymap
 
-# ─── 9. Screenshot tool (Flameshot) ───────────────────────────────────────────
+# ─── 9. Screenshot + Screen Recording ────────────────────────────────────────
+# With keyd active:
+#   Alt+Shift+4 on keyboard → OS sees Ctrl+Shift+4 → flameshot area capture
+#   Alt+Shift+5 on keyboard → OS sees Ctrl+Shift+5 → kooha screen recorder
 if should_skip "screenshot"; then skip "screenshot -- skipped"; else
 
+# Flameshot — area screenshot with annotation (Cmd+Shift+4 equivalent)
 if ! command -v flameshot &>/dev/null; then
     info "Installing Flameshot..."
     sudo apt-get install -y flameshot
@@ -363,39 +390,168 @@ else
     ok "Flameshot already installed"
 fi
 
-# Bind Super+Shift+4 → flameshot gui   (like macOS Cmd+Shift+4 — area screenshot)
-# Bind Super+Shift+5 → flameshot gui   (same; macOS Cmd+Shift+5 is the picker UI)
-if command -v gsettings &>/dev/null; then
-    info "Setting up screenshot shortcuts in GNOME..."
+# Kooha — simple screen recorder (Cmd+Shift+5 equivalent)
+if ! command -v kooha &>/dev/null; then
+    info "Installing Kooha (screen recorder)..."
+    if command -v flatpak &>/dev/null; then
+        flatpak install -y flathub io.github.seadve.Kooha 2>/dev/null && ok "Kooha installed" \
+            || warn "Kooha install failed — install manually from Flathub or use GNOME's built-in Ctrl+Alt+Shift+R"
+    else
+        sudo apt-get install -y flatpak
+        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        flatpak install -y flathub io.github.seadve.Kooha 2>/dev/null && ok "Kooha installed" \
+            || warn "Kooha install failed — install manually from Flathub or use GNOME's built-in Ctrl+Alt+Shift+R"
+    fi
+else
+    ok "Kooha already installed"
+fi
 
-    # Find a free custom shortcut slot
+if command -v gsettings &>/dev/null; then
+    info "Binding Ctrl+Shift+4 and Ctrl+Shift+5 in GNOME..."
+
+    # Helper: register one custom shortcut, reuse slot if command already bound
+    bind_shortcut() {
+        local name="$1" cmd="$2" key="$3"
+
+        # Find existing slot for this command, or the next free slot
+        local slot=0
+        while true; do
+            local base="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom${slot}/"
+            local existing_cmd
+            existing_cmd=$(gsettings get org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$base" command 2>/dev/null || true)
+            # Reuse slot if same command already registered
+            if echo "$existing_cmd" | grep -q "$cmd"; then break; fi
+            # Use this slot if it's empty
+            if [ -z "$existing_cmd" ] || [ "$existing_cmd" = "''" ]; then break; fi
+            slot=$((slot + 1))
+        done
+
+        local base="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom${slot}/"
+        gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$base" name    "$name"
+        gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$base" command "$cmd"
+        gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$base" binding "$key"
+
+        # Add to the registered list if not already there
+        local existing_list
+        existing_list=$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
+        if ! echo "$existing_list" | grep -q "custom${slot}/"; then
+            local new_list
+            if echo "$existing_list" | grep -qE '^\@?a?s?\s*\[\s*\]$'; then
+                new_list="['${base}']"
+            else
+                new_list=$(echo "$existing_list" | sed "s|]$|, '${base}']|")
+            fi
+            gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "$new_list"
+        fi
+
+        ok "Bound: $key → $cmd"
+    }
+
+    # Ctrl+Shift+4 → flameshot area screenshot  (Alt+Shift+4 with keyd)
+    bind_shortcut "Screenshot area" "flameshot gui" "<Control><Shift>4"
+
+    # Ctrl+Shift+5 → kooha screen recorder  (Alt+Shift+5 with keyd)
+    KOOHA_CMD="flatpak run io.github.seadve.Kooha"
+    command -v kooha &>/dev/null && KOOHA_CMD="kooha"
+    bind_shortcut "Screen recorder" "$KOOHA_CMD" "<Control><Shift>5"
+
+else
+    warn "gsettings not found — set shortcuts manually in GNOME Settings > Keyboard"
+fi
+
+fi # end screenshot
+
+# ─── 10. Terminal emulator (Ghostty) ──────────────────────────────────────────
+# Ghostty: fast, GPU-accelerated, built-in multiplexer — popular choice for devs
+# coming from Mac (supports tmux-style splits, ligatures, nerd fonts out of the box)
+if should_skip "terminal"; then skip "terminal -- skipped"; else
+
+if command -v ghostty &>/dev/null; then
+    ok "Ghostty already installed: $(ghostty --version 2>/dev/null | head -1)"
+else
+    info "Installing Ghostty..."
+
+    # Ghostty publishes official .deb releases for Ubuntu
+    GHOSTTY_DEB="/tmp/ghostty.deb"
+    GHOSTTY_RELEASE=$(curl -fsSL "https://api.github.com/repos/ghostty-org/ghostty/releases/latest" \
+        | grep '"browser_download_url"' \
+        | grep 'ubuntu' \
+        | grep '\.deb"' \
+        | head -1 \
+        | sed 's/.*"\(https[^"]*\)".*/\1/')
+
+    if [ -n "$GHOSTTY_RELEASE" ]; then
+        wget -q "$GHOSTTY_RELEASE" -O "$GHOSTTY_DEB"
+        sudo apt-get install -y "$GHOSTTY_DEB"
+        rm -f "$GHOSTTY_DEB"
+        ok "Ghostty installed"
+    else
+        # Fallback: install via snap if no .deb found
+        warn "No .deb release found — trying snap..."
+        if snap install ghostty --classic 2>/dev/null; then
+            ok "Ghostty installed via snap"
+        else
+            warn "Ghostty install failed — install manually: https://ghostty.org/download"
+        fi
+    fi
+fi
+
+fi # end terminal
+
+# ─── 11. Emoji picker (Smile) ─────────────────────────────────────────────────
+# Triggered by Ctrl+Alt+Space (keyd maps this to Super+.)
+# like macOS Ctrl+Cmd+Space
+if should_skip "emoji"; then skip "emoji -- skipped"; else
+
+# Install Smile via flatpak (most user-friendly GNOME emoji picker)
+if ! flatpak list 2>/dev/null | grep -q "it.mijorus.smile"; then
+    info "Installing Smile emoji picker..."
+    if ! command -v flatpak &>/dev/null; then
+        sudo apt-get install -y flatpak
+        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    fi
+    flatpak install -y flathub it.mijorus.smile 2>/dev/null \
+        && ok "Smile emoji picker installed" \
+        || warn "Smile install failed — emoji picker won't be available via Ctrl+Alt+Space"
+else
+    ok "Smile emoji picker already installed"
+fi
+
+# Bind Super+. → Smile  (keyd maps Ctrl+Alt+Space → Super+.)
+if command -v gsettings &>/dev/null; then
+    info "Binding Super+. to Smile emoji picker..."
+
+    SMILE_CMD="flatpak run it.mijorus.smile"
     SLOT=0
-    while gsettings get org.gnome.settings-daemon.plugins.media-keys.custom-keybinding \
-        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom${SLOT}/" \
-        2>/dev/null | grep -q "flameshot"; do
+    while true; do
+        BASE="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom${SLOT}/"
+        existing_cmd=$(gsettings get org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$BASE" command 2>/dev/null || true)
+        if echo "$existing_cmd" | grep -q "smile"; then break; fi
+        if [ -z "$existing_cmd" ] || [ "$existing_cmd" = "''" ]; then break; fi
         SLOT=$((SLOT + 1))
     done
 
     BASE="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom${SLOT}/"
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$BASE" name    "Emoji picker"
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$BASE" command "$SMILE_CMD"
+    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$BASE" binding "<Super>period"
 
-    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$BASE" name "Flameshot area"
-    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$BASE" command "flameshot gui"
-    gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:"$BASE" binding "<Super><Shift>s"
-
-    # Register the new shortcut
-    EXISTING=$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
-    if ! echo "$EXISTING" | grep -q "custom${SLOT}"; then
-        NEW_LIST=$(echo "$EXISTING" | sed "s|]|, '${BASE}']|")
+    EXISTING_LIST=$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings)
+    if ! echo "$EXISTING_LIST" | grep -q "custom${SLOT}/"; then
+        if echo "$EXISTING_LIST" | grep -qE '^\@?a?s?\s*\[\s*\]$'; then
+            NEW_LIST="['${BASE}']"
+        else
+            NEW_LIST=$(echo "$EXISTING_LIST" | sed "s|]$|, '${BASE}']|")
+        fi
         gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings "$NEW_LIST"
     fi
 
-    ok "Screenshot shortcut: Super+Shift+S → Flameshot area capture"
-    ok "(If keyd is active, use Alt+Shift+4 — keyd maps Alt to Super)"
+    ok "Bound: Ctrl+Alt+Space → Super+. → Smile emoji picker"
 else
-    warn "gsettings not found — set shortcut manually: Flameshot > Settings > Shortcuts"
+    warn "gsettings not found — set shortcut manually: Super+. → Smile"
 fi
 
-fi # end screenshot
+fi # end emoji
 
 # ─── Done ─────────────────────────────────────────────────────────────────────
 echo ""
@@ -407,13 +563,20 @@ echo "   Left Alt  = Cmd  (copy, paste, save, undo, tabs...)"
 echo "   Super key = Option (word-jump with Super+Left/Right)"
 echo "   Left Ctrl = Ctrl (unchanged)"
 echo ""
-echo " Screenshots (GNOME):"
-echo "   Print Screen           = Full screenshot"
-echo "   Shift+Print Screen     = Area selection"
-echo "   Super+Shift+S          = Flameshot area capture (Mac-like)"
+echo " Screenshots & Recording:"
+echo "   Alt+Shift+4            = Area screenshot (Flameshot) — like macOS Cmd+Shift+4"
+echo "   Alt+Shift+5            = Screen recorder (Kooha)     — like macOS Cmd+Shift+5"
+echo "   Print Screen           = Full screenshot (GNOME built-in)"
+echo "   Shift+Print Screen     = Area selection  (GNOME built-in)"
+echo "   Ctrl+Alt+Shift+R       = Quick record toggle (GNOME built-in, no UI)"
+echo ""
+echo " Search & Emoji:"
+echo "   Alt+Space              = GNOME search (Spotlight)    — like macOS Cmd+Space"
+echo "   Ctrl+Alt+Space         = Smile emoji picker           — like macOS Ctrl+Cmd+Space"
 echo ""
 echo " To pause keymap: sudo systemctl stop keyd"
 echo " To resume:       sudo systemctl start keyd"
 echo ""
 echo "All done! Log out and back in to apply group changes (Docker)."
 echo "Restart VS Code to apply settings."
+echo "Launch Ghostty: ghostty  (or find it in your app launcher)"
