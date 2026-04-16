@@ -1,0 +1,205 @@
+// Ubuntu keybindings — no Mac keymap (no keyd)
+//
+// Standard Ubuntu/Linux shortcuts (Ctrl+C/V/X/Z/S/A/P/F/W/N etc.)
+// are already the VSCode defaults on Linux — they are NOT re-mapped here.
+//
+// This file adds:
+//   1. Vim-style h/j/k/l direction keys (with modifiers) for VSCode power features:
+//        Alt+j/k            → move line down / up      (j=down, k=up)
+//        Shift+Alt+j/k      → duplicate line down / up
+//        Ctrl+Alt+j/k       → add multi-cursor below / above
+//        Ctrl+Alt+h/l       → focus left / right editor group  (h=left, l=right)
+//        Ctrl+Shift+Alt+h/j/k/l → move editor to adjacent group
+//
+//   2. Suggest/quickpick navigation with Ctrl+j/k (vim muscle memory)
+//
+//   3. View resize with Ctrl+Shift+h/j/k/l in Vim Normal mode
+//
+//   4. Quality-of-life: go-to-definition, trigger suggest, terminal shortcuts,
+//      explorer new file/folder, git checkout
+[
+    // ── Move line up / down ───────────────────────────────────────────────────
+    // Alt+j / Alt+k  (vim j=down, k=up — works in Normal and Insert mode)
+    {
+        "key": "alt+j",
+        "command": "editor.action.moveLinesDownAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "alt+k",
+        "command": "editor.action.moveLinesUpAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+
+    // ── Duplicate line down / up ──────────────────────────────────────────────
+    // Shift+Alt+j / Shift+Alt+k
+    {
+        "key": "shift+alt+j",
+        "command": "editor.action.copyLinesDownAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "shift+alt+k",
+        "command": "editor.action.copyLinesUpAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+
+    // ── Multi-cursor — vim direction keys ─────────────────────────────────────
+    // Ctrl+Alt+j = add cursor below   (j = down)
+    // Ctrl+Alt+k = add cursor above   (k = up)
+    // Keep Ctrl+Alt+Up/Down too so muscle memory from default shortcut still works
+    {
+        "key": "ctrl+alt+j",
+        "command": "editor.action.insertCursorBelow",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+alt+k",
+        "command": "editor.action.insertCursorAbove",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+alt+down",
+        "command": "editor.action.insertCursorBelow",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+alt+up",
+        "command": "editor.action.insertCursorAbove",
+        "when": "editorTextFocus"
+    },
+
+    // ── Focus editor group — vim directions ───────────────────────────────────
+    // Ctrl+Alt+h/l = focus left / right group (h=left, l=right)
+    // (also disables the default keyd terminal-pane bindings that used these)
+    {
+        "key": "ctrl+alt+h",
+        "command": "workbench.action.focusLeftGroup"
+    },
+    {
+        "key": "ctrl+alt+l",
+        "command": "workbench.action.focusRightGroup"
+    },
+
+    // ── Move editor to adjacent group — Ctrl+Shift+Alt+h/j/k/l ──────────────
+    {
+        "key": "ctrl+shift+alt+h",
+        "command": "workbench.action.moveEditorToLeftGroup"
+    },
+    {
+        "key": "ctrl+shift+alt+l",
+        "command": "workbench.action.moveEditorToRightGroup"
+    },
+    {
+        "key": "ctrl+shift+alt+k",
+        "command": "workbench.action.moveEditorToAboveGroup"
+    },
+    {
+        "key": "ctrl+shift+alt+j",
+        "command": "workbench.action.moveEditorToBelowGroup"
+    },
+
+    // ── View resize — Ctrl+Shift+h/j/k/l in Vim Normal mode ─────────────────
+    // (mirrors vim window resize muscle memory: feel like :resize / :vertical resize)
+    {
+        "key": "ctrl+shift+l",
+        "command": "workbench.action.increaseViewWidth",
+        "when": "editorTextFocus && !editorReadonly && vim.active && vim.mode == 'Normal'"
+    },
+    {
+        "key": "ctrl+shift+h",
+        "command": "workbench.action.decreaseViewWidth",
+        "when": "editorTextFocus && !editorReadonly && vim.active && vim.mode == 'Normal'"
+    },
+    {
+        "key": "ctrl+shift+k",
+        "command": "workbench.action.increaseViewHeight",
+        "when": "editorTextFocus && !editorReadonly && vim.active && vim.mode == 'Normal'"
+    },
+    {
+        "key": "ctrl+shift+j",
+        "command": "workbench.action.decreaseViewHeight",
+        "when": "editorTextFocus && !editorReadonly && vim.active && vim.mode == 'Normal'"
+    },
+
+    // ── Suggest widget navigation — Ctrl+j/k (vim up/down) ───────────────────
+    {
+        "key": "ctrl+j",
+        "command": "selectNextSuggestion",
+        "when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus"
+    },
+    {
+        "key": "ctrl+k",
+        "command": "selectPrevSuggestion",
+        "when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus"
+    },
+    {
+        "key": "ctrl+j",
+        "command": "quickInput.next",
+        "when": "inQuickInput && quickInputType == 'quickPick'"
+    },
+    {
+        "key": "ctrl+k",
+        "command": "quickInput.previous",
+        "when": "inQuickInput && quickInputType == 'quickPick'"
+    },
+
+    // ── Trigger suggest ───────────────────────────────────────────────────────
+    {
+        "key": "ctrl+.",
+        "command": "editor.action.triggerSuggest",
+        "when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly && !suggestWidgetVisible"
+    },
+
+    // ── Go to definition — Ctrl+Alt+- ─────────────────────────────────────────
+    {
+        "key": "ctrl+alt+-",
+        "command": "editor.action.revealDefinition",
+        "when": "editorHasDefinitionProvider && editorTextFocus"
+    },
+    {
+        "key": "f12",
+        "command": "-editor.action.revealDefinition",
+        "when": "editorHasDefinitionProvider && editorTextFocus"
+    },
+
+    // ── Explorer: new file / folder ───────────────────────────────────────────
+    {
+        "key": "ctrl+n",
+        "command": "explorer.newFile",
+        "when": "explorerViewletFocus"
+    },
+    {
+        "key": "ctrl+shift+n",
+        "command": "explorer.newFolder",
+        "when": "explorerViewletFocus"
+    },
+
+    // ── Git checkout ──────────────────────────────────────────────────────────
+    {
+        "key": "ctrl+alt+g",
+        "command": "git.checkout"
+    },
+
+    // ── Terminal ──────────────────────────────────────────────────────────────
+    {
+        "key": "ctrl+shift+w",
+        "command": "workbench.action.terminal.kill",
+        "when": "terminalFocus"
+    },
+    {
+        "key": "shift+enter",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": { "text": "\\\r\n" },
+        "when": "terminalFocus"
+    },
+
+    // ── Select all occurrences (Ctrl+Shift+L on Linux) ────────────────────────
+    // VS Code default on Linux is already Ctrl+Shift+L — kept for reference.
+    // Disable the default Ctrl+F2 conflict if needed:
+    { "key": "ctrl+shift+l", "command": "editor.action.selectHighlights", "when": "editorFocus && !(vim.active && vim.mode == 'Normal')" },
+
+    // ── Delete line ───────────────────────────────────────────────────────────
+    // In Vim Normal mode Ctrl+Shift+K conflicts with view resize above, so scope it:
+    { "key": "ctrl+shift+k", "command": "editor.action.deleteLines", "when": "editorTextFocus && !editorReadonly && !(vim.active && vim.mode == 'Normal')" }
+]
